@@ -155,6 +155,34 @@ LANGUAGE RULES (VERY IMPORTANT):
 """
 
 
+HAWY_PERSONALITY = """
+You are Hawy the Hedgehog, a friendly TaeKwon-Do ITF assistant for kids.
+
+CORE BEHAVIOR RULES:
+- You talk to children like a patient, kind coach.
+- You use very simple, short sentences and avoid complicated words.
+- You ALWAYS adapt to the child's language (Romanian or English), following the LANGUAGE RULES section.
+- You remember what you talked about earlier in this session and use that context when answering.
+- If the child says things like "that kick", "that block", or "what about that pattern again?",
+  you look at the previous conversation and try to understand what they mean.
+- If you are not sure what they mean, you ask a short clarifying question instead of guessing.
+
+STYLE RULES:
+- Start with a friendly sentence (e.g. “Hai să îți explic!”, “Great question!”, “Super întrebare!”).
+- Use at most 2–3 emojis per answer, never more.
+- Prefer bullet points or short paragraphs, not one giant block of text.
+- For techniques or patterns, explain:
+  - what it is,
+  - when it is used,
+  - one or two tips for children.
+
+LIMITS:
+- If the child asks about something not related to TaeKwon-Do, safety, sport, mindset or basic school life,
+  answer very briefly and gently bring the topic back to TaeKwon-Do or healthy habits.
+- Never invent dangerous exercises. Always think about safety first.
+"""
+
+
 
 # Models
 class ChatMessage(BaseModel):
@@ -174,35 +202,42 @@ async def health_check():
 @app.post("/api/chat", response_model=ChatResponse)
 async def chat_with_hawy(chat_message: ChatMessage):
     try:
-        # Get chat history for context
+        # 1) Luăm mai mult istoric ca să avem context mai bun
+        #    (ultimele 15 interacțiuni user–Hawy pentru acest session_id)
         history = await db.chats.find(
             {"session_id": chat_message.session_id}
-        ).sort("timestamp", -1).limit(5).to_list(5)
+        ).sort("timestamp", -1).limit(25).to_list(25)
 
-        # Build conversation context (string cu ultimele mesaje)
+        # 2) Construim un "transcript" de conversație
         conversation_history = ""
         if history:
+            # le inversăm ca să fie de la vechi la nou
             for msg in reversed(history):
-                conversation_history += f"User: {msg['user_message']}\n"
+                conversation_history += f"Child: {msg['user_message']}\n"
                 conversation_history += f"Hawy: {msg['bot_response']}\n\n"
 
-        # 🔹 AICI construim promptul complet (în afara for-ului)
-        full_prompt = f"{TAEKWONDO_KNOWLEDGE}\n\n{LANGUAGE_GUIDE}\n\n"
-
-        if conversation_history:
-            full_prompt += f"Previous conversation:\n{conversation_history}\n"
-
-        full_prompt += (
-            f"Child's question: {chat_message.message}\n\n"
-            f"Hawy's response:"
+        # 3) Construim promptul complet cu knowledge + reguli de limbă + personalitate + context
+        full_prompt = (
+            f"{TAEKWONDO_KNOWLEDGE}\n\n"
+            f"{LANGUAGE_GUIDE}\n\n"
+            f"{HAWY_PERSONALITY}\n\n"
         )
 
-        # Generate response using Gemini
+        if conversation_history:
+            full_prompt += f"Previous conversation between the child and Hawy:\n{conversation_history}\n"
+
+        full_prompt += (
+            "Now continue the conversation.\n\n"
+            f"Child's new message: {chat_message.message}\n\n"
+            "Hawy's next answer (follow ALL rules above):"
+        )
+
+        # 4) Cerem răspuns de la Gemini
         model = genai.GenerativeModel("gemini-2.0-flash")
         response = model.generate_content(full_prompt)
         bot_response = response.text
 
-        # Save to database
+        # 5) Salvăm în Mongo ca să avem context data viitoare
         chat_record = {
             "session_id": chat_message.session_id,
             "user_message": chat_message.message,
@@ -218,7 +253,7 @@ async def chat_with_hawy(chat_message: ChatMessage):
         )
 
     except Exception as e:
-        # Ca să vezi motivul în logurile Render:
+        # log ca să vezi în Render ce se întâmplă dacă pocnește
         print(f"Error in /api/chat: {e}")
         raise HTTPException(status_code=500, detail=f"Error processing chat: {str(e)}")
 
