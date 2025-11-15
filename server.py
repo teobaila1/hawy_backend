@@ -94,7 +94,7 @@ TAEKWON-DO ITF KNOWLEDGE:
 11. OUTER FOREARM BLOCK (Bakat Palmok Makgi) - Outside forearm
 12. INNER FOREARM BLOCK (An Palmok Makgi) - Inside forearm
 13. TWIN FOREARM BLOCK (Sang Palmok Makgi) - Double block
-14. CIRCULAR BLOCK (Dollimyo Makgi) - Circular motion
+14. CIRCULAR BLOCK (Dollmyo Makgi) - Circular motion
 15. HOOKING BLOCK (Golcho Makgi) - Hooking motion
 16. W-SHAPE BLOCK (San Makgi) - Mountain shape block
 
@@ -170,6 +170,7 @@ class ChatResponse(BaseModel):
 async def health_check():
     return {"status": "healthy", "service": "Hawy TaeKwon-Do Chatbot"}
 
+
 @app.post("/api/chat", response_model=ChatResponse)
 async def chat_with_hawy(chat_message: ChatMessage):
     try:
@@ -177,30 +178,30 @@ async def chat_with_hawy(chat_message: ChatMessage):
         history = await db.chats.find(
             {"session_id": chat_message.session_id}
         ).sort("timestamp", -1).limit(5).to_list(5)
-        
-        # Build conversation context
+
+        # Build conversation context (string cu ultimele mesaje)
         conversation_history = ""
         if history:
             for msg in reversed(history):
                 conversation_history += f"User: {msg['user_message']}\n"
                 conversation_history += f"Hawy: {msg['bot_response']}\n\n"
 
-                # Create prompt with knowledge base, language rules and context
-                full_prompt = f"{TAEKWONDO_KNOWLEDGE}\n\n{LANGUAGE_GUIDE}\n\n"
+        # 🔹 AICI construim promptul complet (în afara for-ului)
+        full_prompt = f"{TAEKWONDO_KNOWLEDGE}\n\n{LANGUAGE_GUIDE}\n\n"
 
-                if conversation_history:
-                    full_prompt += f"Previous conversation:\n{conversation_history}\n"
+        if conversation_history:
+            full_prompt += f"Previous conversation:\n{conversation_history}\n"
 
-                full_prompt += (
-                    f"Child's question: {chat_message.message}\n\n"
-                    f"Hawy's response:"
-                )
-        
+        full_prompt += (
+            f"Child's question: {chat_message.message}\n\n"
+            f"Hawy's response:"
+        )
+
         # Generate response using Gemini
-        model = genai.GenerativeModel('gemini-2.0-flash')
+        model = genai.GenerativeModel("gemini-2.0-flash")
         response = model.generate_content(full_prompt)
         bot_response = response.text
-        
+
         # Save to database
         chat_record = {
             "session_id": chat_message.session_id,
@@ -209,15 +210,18 @@ async def chat_with_hawy(chat_message: ChatMessage):
             "timestamp": datetime.utcnow()
         }
         await db.chats.insert_one(chat_record)
-        
+
         return ChatResponse(
             response=bot_response,
             session_id=chat_message.session_id,
             timestamp=datetime.utcnow()
         )
-    
+
     except Exception as e:
+        # Ca să vezi motivul în logurile Render:
+        print(f"Error in /api/chat: {e}")
         raise HTTPException(status_code=500, detail=f"Error processing chat: {str(e)}")
+
 
 @app.get("/api/chat/history/{session_id}")
 async def get_chat_history(session_id: str, limit: int = 20):
