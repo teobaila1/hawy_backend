@@ -41,7 +41,6 @@ numpy==2.3.4
 oauthlib==3.3.1
 packaging==25.0
 pandas==2.3.3
-passlib==1.7.4
 pathspec==0.12.1
 platformdirs==4.5.0
 pluggy==1.6.0
@@ -61,7 +60,6 @@ pyparsing==3.2.5
 pytest==8.4.2
 python-dateutil==2.9.0.post0
 python-dotenv==1.2.1
-python-jose==3.5.0
 python-multipart==0.0.20
 pytokens==0.3.0
 pytz==2025.2
@@ -84,3 +82,5 @@ uritemplate==4.2.0
 urllib3==2.5.0
 uvicorn==0.25.0
 watchfiles==1.1.1
+passlib[bcrypt]
+python-jose[cryptography]

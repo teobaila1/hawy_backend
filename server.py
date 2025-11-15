@@ -1,36 +1,93 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Depends
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from pydantic import BaseModel, EmailStr
 from motor.motor_asyncio import AsyncIOMotorClient
-from datetime import datetime
-from typing import List, Optional
+from datetime import datetime, timedelta
+from typing import Optional
 import os
 from dotenv import load_dotenv
 import google.generativeai as genai
+from passlib.context import CryptContext
+from jose import jwt, JWTError
+import uuid
 
 load_dotenv()
 
 app = FastAPI()
 
-# CORS middleware
+# ---------------- CORS ----------------
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=["*"],  # poți restrânge mai târziu la domeniul tău
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# MongoDB setup
+# ---------------- MongoDB ----------------
 MONGO_URL = os.getenv("MONGO_URL", "mongodb://localhost:27017")
 client = AsyncIOMotorClient(MONGO_URL)
-db = client.taekwondo_chatbot
+db = client.taekwondo_chatbot  # colecții: users, chats
 
-# Gemini API setup
-GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY", "AIzaSyAe0sFL82wkZKcHZU_77oI48zpbcPknWt8")
+# ---------------- Gemini ----------------
+GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
+if not GOOGLE_API_KEY:
+    raise RuntimeError("GOOGLE_API_KEY is not set in environment (.env)")
 genai.configure(api_key=GOOGLE_API_KEY)
 
-# TaeKwon-Do ITF Knowledge Base
+# ---------------- Auth / JWT setup ----------------
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+auth_scheme = HTTPBearer()
+
+SECRET_KEY = os.getenv("JWT_SECRET", "change-this-in-production")
+ALGORITHM = "HS256"
+ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24 * 7  # 7 zile
+
+
+def get_password_hash(password: str) -> str:
+    return pwd_context.hash(password)
+
+
+def verify_password(plain_password: str, hashed_password: str) -> bool:
+    return pwd_context.verify(plain_password, hashed_password)
+
+
+def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -> str:
+    to_encode = data.copy()
+    expire = datetime.utcnow() + (
+        expires_delta or timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    )
+    to_encode.update({"exp": expire})
+    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+    return encoded_jwt
+
+
+async def get_current_user(
+    credentials: HTTPAuthorizationCredentials = Depends(auth_scheme),
+):
+    """
+    Folosit pentru endpoint-uri care cer user logat.
+    Header: Authorization: Bearer <token>
+    """
+    token = credentials.credentials
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        user_id: str = payload.get("sub")
+        if user_id is None:
+            raise HTTPException(status_code=401, detail="Invalid token")
+    except JWTError:
+        raise HTTPException(status_code=401, detail="Invalid or expired token")
+
+    user = await db.users.find_one({"_id": user_id})
+    if not user:
+        raise HTTPException(status_code=401, detail="User not found")
+
+    return user
+
+
+# ---------------- Prompt / Knowledge ----------------
+
 TAEKWONDO_KNOWLEDGE = """
 You are Hawy the Hedgehog 🦔, a friendly and enthusiastic TaeKwon-Do instructor for children!
 
@@ -143,7 +200,6 @@ TAEKWON-DO ITF KNOWLEDGE:
 Remember: Always encourage practice, safety, and respect (courtesy, integrity, perseverance, self-control, indomitable spirit - the TaeKwon-Do tenets)!
 """
 
-
 LANGUAGE_GUIDE = """
 LANGUAGE RULES (VERY IMPORTANT):
 - Detect automatically the language of the child's message (Romanian or English).
@@ -154,69 +210,160 @@ LANGUAGE RULES (VERY IMPORTANT):
 - Keep explanations very simple, friendly and adapted for children.
 """
 
-
 HAWY_PERSONALITY = """
-You are Hawy the Hedgehog, a friendly TaeKwon-Do ITF assistant for kids.
+You are Hawy the Hedgehog 🦔 — a fun, energetic and friendly TaeKwon-Do buddy.
 
-CORE BEHAVIOR RULES:
-- You talk to children like a patient, kind coach.
-- You use very simple, short sentences and avoid complicated words.
-- You ALWAYS adapt to the child's language (Romanian or English), following the LANGUAGE RULES section.
-- You remember what you talked about earlier in this session and use that context when answering.
-- If the child says things like "that kick", "that block", or "what about that pattern again?",
-  you look at the previous conversation and try to understand what they mean.
-- If you are not sure what they mean, you ask a short clarifying question instead of guessing.
+TONE & VIBE:
+- Talk like a cool older friend, not like a teacher or adult.
+- Be playful, relaxed, natural.
+- Use short messages (1–3 short paragraphs max).
+- Use max 1–2 emojis, never spam.
+- Never sound formal (“Ce te interesează cel mai mult?”, “Te rog oferă detalii”).
+- Avoid teacher-like sentences such as “Hai să discutăm despre...”, “Explicația este...”.
 
-STYLE RULES:
-- Start with a friendly sentence (e.g. “Hai să îți explic!”, “Great question!”, “Super întrebare!”).
-- Use at most 2–3 emojis per answer, never more.
-- Prefer bullet points or short paragraphs, not one giant block of text.
-- For techniques or patterns, explain:
-  - what it is,
-  - when it is used,
-  - one or two tips for children.
+HOW TO TALK:
+- If the child writes in Romanian → answer in Romanian, but casual and friendly.
+- If the child writes in English → answer in English, also casual.
+- Match THEIR tone:
+  - If they joke → you joke back.
+  - If they are confused → you simplify.
+  - If they are sad → be warm but not cheesy.
+- You can add fun hedgehog personality things (e.g. “I’m small but fast!”, “Hedgehogs love rolling!”).
 
-LIMITS:
-- If the child asks about something not related to TaeKwon-Do, safety, sport, mindset or basic school life,
-  answer very briefly and gently bring the topic back to TaeKwon-Do or healthy habits.
-- Never invent dangerous exercises. Always think about safety first.
+CONVERSATION STYLE:
+- Keep answers short and snappy.
+- Avoid long lists unless the kid asks.
+- Avoid giving too much information at once.
+- Don’t give motivational speeches.
+- Don't praise too much (no “great question!” every time).
+- Don’t ask too many questions in a row.
+
+CONTEXT USE:
+- Remember previous parts of the conversation.
+- If they say “de ce?” or “why?”, answer naturally, not like a teacher.
+- If they refer to “that kick” or “ce imi ziceai mai devreme”, use context.
+
+SAFETY:
+- No dangerous exercises.
+- Keep training advice simple and light.
+
+If the topic drifts far from TaeKwon-Do, you answer briefly but bring it back smoothly.
 """
 
 
+# ---------------- Pydantic models ----------------
 
-# Models
+# Auth
+class UserCreate(BaseModel):
+    email: EmailStr
+    password: str
+    name: Optional[str] = None
+
+
+class UserLogin(BaseModel):
+    email: EmailStr
+    password: str
+
+
+class UserPublic(BaseModel):
+    id: str
+    email: EmailStr
+    name: Optional[str] = None
+
+
+class TokenResponse(BaseModel):
+    access_token: str
+    token_type: str = "bearer"
+    user: UserPublic
+
+
+# Chat
 class ChatMessage(BaseModel):
     message: str
-    session_id: Optional[str] = "default"
+    session_id: Optional[str] = None  # dacă nu vine, generăm noi
+    user_id: Optional[str] = None     # opțional, setat din frontend după login
+
 
 class ChatResponse(BaseModel):
     response: str
     session_id: str
     timestamp: datetime
 
+
+# ---------------- Health ----------------
 @app.get("/api/health")
 async def health_check():
     return {"status": "healthy", "service": "Hawy TaeKwon-Do Chatbot"}
 
 
+# ---------------- Auth endpoints ----------------
+@app.post("/api/auth/signup", response_model=TokenResponse)
+async def signup(user_data: UserCreate):
+    existing = await db.users.find_one({"email": user_data.email})
+    if existing:
+        raise HTTPException(status_code=400, detail="Email already registered")
+
+    user_id = str(uuid.uuid4())
+    hashed_pw = get_password_hash(user_data.password)
+
+    user_doc = {
+        "_id": user_id,
+        "email": user_data.email,
+        "name": user_data.name or "",
+        "password_hash": hashed_pw,
+        "created_at": datetime.utcnow(),
+    }
+    await db.users.insert_one(user_doc)
+
+    token = create_access_token({"sub": user_id})
+
+    user_public = UserPublic(id=user_id, email=user_data.email, name=user_data.name)
+    return TokenResponse(access_token=token, user=user_public)
+
+
+@app.post("/api/auth/login", response_model=TokenResponse)
+async def login(login_data: UserLogin):
+    user = await db.users.find_one({"email": login_data.email})
+    if not user or not verify_password(login_data.password, user["password_hash"]):
+        raise HTTPException(status_code=401, detail="Invalid email or password")
+
+    user_id = user["_id"]
+    token = create_access_token({"sub": user_id})
+
+    user_public = UserPublic(
+        id=user_id,
+        email=user["email"],
+        name=user.get("name") or "",
+    )
+    return TokenResponse(access_token=token, user=user_public)
+
+
+# ---------------- Chat endpoints ----------------
 @app.post("/api/chat", response_model=ChatResponse)
 async def chat_with_hawy(chat_message: ChatMessage):
     try:
-        # 1) Luăm mai mult istoric ca să avem context mai bun
-        #    (ultimele 15 interacțiuni user–Hawy pentru acest session_id)
-        history = await db.chats.find(
-            {"session_id": chat_message.session_id}
-        ).sort("timestamp", -1).limit(25).to_list(25)
+        # 1) session_id – dacă nu e trimis, generăm unul nou
+        session_id = chat_message.session_id or f"session_{uuid.uuid4().hex}"
 
-        # 2) Construim un "transcript" de conversație
+        # 2) luăm istoric pentru context (ultimele 25 mesaje)
+        query = {"session_id": session_id}
+        if chat_message.user_id:
+            query["user_id"] = chat_message.user_id
+
+        history = (
+            await db.chats.find(query)
+            .sort("timestamp", -1)
+            .limit(25)
+            .to_list(25)
+        )
+
         conversation_history = ""
         if history:
-            # le inversăm ca să fie de la vechi la nou
             for msg in reversed(history):
                 conversation_history += f"Child: {msg['user_message']}\n"
                 conversation_history += f"Hawy: {msg['bot_response']}\n\n"
 
-        # 3) Construim promptul complet cu knowledge + reguli de limbă + personalitate + context
+        # 3) prompt complet
         full_prompt = (
             f"{TAEKWONDO_KNOWLEDGE}\n\n"
             f"{LANGUAGE_GUIDE}\n\n"
@@ -224,7 +371,10 @@ async def chat_with_hawy(chat_message: ChatMessage):
         )
 
         if conversation_history:
-            full_prompt += f"Previous conversation between the child and Hawy:\n{conversation_history}\n"
+            full_prompt += (
+                "Previous conversation between the child and Hawy:\n"
+                f"{conversation_history}\n"
+            )
 
         full_prompt += (
             "Now continue the conversation.\n\n"
@@ -232,105 +382,119 @@ async def chat_with_hawy(chat_message: ChatMessage):
             "Hawy's next answer (follow ALL rules above):"
         )
 
-        # 4) Cerem răspuns de la Gemini
         model = genai.GenerativeModel("gemini-2.0-flash")
         response = model.generate_content(full_prompt)
         bot_response = response.text
 
-        # 5) Salvăm în Mongo ca să avem context data viitoare
+        # 4) salvăm în Mongo
         chat_record = {
-            "session_id": chat_message.session_id,
+            "session_id": session_id,
+            "user_id": chat_message.user_id,
             "user_message": chat_message.message,
             "bot_response": bot_response,
-            "timestamp": datetime.utcnow()
+            "timestamp": datetime.utcnow(),
         }
         await db.chats.insert_one(chat_record)
 
         return ChatResponse(
             response=bot_response,
-            session_id=chat_message.session_id,
-            timestamp=datetime.utcnow()
+            session_id=session_id,
+            timestamp=datetime.utcnow(),
         )
 
     except Exception as e:
-        # log ca să vezi în Render ce se întâmplă dacă pocnește
         print(f"Error in /api/chat: {e}")
         raise HTTPException(status_code=500, detail=f"Error processing chat: {str(e)}")
 
 
 @app.get("/api/chat/history/{session_id}")
-async def get_chat_history(session_id: str, limit: int = 20):
+async def get_chat_history(session_id: str, user_id: Optional[str] = None, limit: int = 20):
     try:
-        history = await db.chats.find(
-            {"session_id": session_id}
-        ).sort("timestamp", -1).limit(limit).to_list(limit)
-        
-        # Convert ObjectId to string for JSON serialization
+        query = {"session_id": session_id}
+        if user_id:
+            query["user_id"] = user_id
+
+        history = (
+            await db.chats.find(query)
+            .sort("timestamp", -1)
+            .limit(limit)
+            .to_list(limit)
+        )
+
         for msg in history:
             msg["_id"] = str(msg["_id"])
-        
+
         return {"history": list(reversed(history))}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error fetching history: {str(e)}")
 
+
 @app.delete("/api/chat/history/{session_id}")
-async def clear_chat_history(session_id: str):
+async def clear_chat_history(session_id: str, user_id: Optional[str] = None):
     try:
-        result = await db.chats.delete_many({"session_id": session_id})
+        query = {"session_id": session_id}
+        if user_id:
+            query["user_id"] = user_id
+
+        result = await db.chats.delete_many(query)
         return {"deleted_count": result.deleted_count}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error clearing history: {str(e)}")
 
+
+# ---------------- Knowledge endpoint ----------------
 @app.get("/api/knowledge")
 async def get_knowledge():
-    """Return TaeKwon-Do knowledge categories for learning section"""
     return {
         "categories": [
             {
                 "id": "patterns",
                 "name": "Patterns (Tuls)",
                 "icon": "🥋",
-                "description": "Learn the traditional forms"
+                "description": "Learn the traditional forms",
             },
             {
                 "id": "stances",
                 "name": "Stances (Sogi)",
                 "icon": "🧘",
-                "description": "Master different positions"
+                "description": "Master different positions",
             },
             {
                 "id": "blocks",
                 "name": "Blocks (Makgi)",
                 "icon": "🛡️",
-                "description": "Defense techniques"
+                "description": "Defense techniques",
             },
             {
                 "id": "punches",
                 "name": "Punches (Jirugi)",
                 "icon": "👊",
-                "description": "Strike techniques"
+                "description": "Strike techniques",
             },
             {
                 "id": "hand_parts",
                 "name": "Hand Parts",
                 "icon": "✋",
-                "description": "Parts used for striking"
+                "description": "Parts used for striking",
             },
             {
                 "id": "foot_parts",
                 "name": "Foot Parts",
                 "icon": "🦶",
-                "description": "Parts used for kicking"
+                "description": "Parts used for kicking",
             },
             {
                 "id": "kicks",
                 "name": "Kicks (Chagi)",
                 "icon": "🦵",
-                "description": "Kicking techniques"
-            }
+                "description": "Kicking techniques",
+            },
         ]
     }
 
+
+# ---------------- Main (local dev) ----------------
 if __name__ == "__main__":
     import uvicorn
+
     uvicorn.run(app, host="0.0.0.0", port=8001)
