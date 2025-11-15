@@ -137,11 +137,24 @@ TAEKWON-DO ITF KNOWLEDGE:
 2. SIDE KICK (Yop Chagi) - Powerful sideways kick
 3. TURNING KICK (Dollyo Chagi) - Roundhouse kick
 4. BACK KICK (Dwit Chagi) - Backward kick with heel
-5. HOOK KICK (Golcho Chagi) - Hooking motion kick
-6. CRESCENT KICK (Bandal Chagi) - Arc motion kick
+5. HOOK KICK (Goro Chagi) - Hooking motion kick
+6. CRESCENT KICK (Naeryo Chagi) - Arc motion kick
 
 Remember: Always encourage practice, safety, and respect (courtesy, integrity, perseverance, self-control, indomitable spirit - the TaeKwon-Do tenets)!
 """
+
+
+LANGUAGE_GUIDE = """
+LANGUAGE RULES (VERY IMPORTANT):
+- Detect automatically the language of the child's message (Romanian or English).
+- If the child writes in Romanian, you MUST answer fully in Romanian.
+- If the child writes in English, you MUST answer fully in English.
+- If the child mixes Romanian and English, answer mainly in the language used most in the last message.
+- Never say that you detected the language. Just answer naturally.
+- Keep explanations very simple, friendly and adapted for children.
+"""
+
+
 
 # Models
 class ChatMessage(BaseModel):
@@ -171,12 +184,17 @@ async def chat_with_hawy(chat_message: ChatMessage):
             for msg in reversed(history):
                 conversation_history += f"User: {msg['user_message']}\n"
                 conversation_history += f"Hawy: {msg['bot_response']}\n\n"
-        
-        # Create prompt with knowledge base and context
-        full_prompt = f"{TAEKWONDO_KNOWLEDGE}\n\n"
-        if conversation_history:
-            full_prompt += f"Previous conversation:\n{conversation_history}\n"
-        full_prompt += f"Child's question: {chat_message.message}\n\nHawy's response:"
+
+                # Create prompt with knowledge base, language rules and context
+                full_prompt = f"{TAEKWONDO_KNOWLEDGE}\n\n{LANGUAGE_GUIDE}\n\n"
+
+                if conversation_history:
+                    full_prompt += f"Previous conversation:\n{conversation_history}\n"
+
+                full_prompt += (
+                    f"Child's question: {chat_message.message}\n\n"
+                    f"Hawy's response:"
+                )
         
         # Generate response using Gemini
         model = genai.GenerativeModel('gemini-2.0-flash')
