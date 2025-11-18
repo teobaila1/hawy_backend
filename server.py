@@ -461,7 +461,7 @@ async def get_knowledge():
         "categories": [
             {
                 "id": "patterns",
-                "name": "Patterns (Tuls)",
+                "name": "Patterns (Tulls)",
                 "icon": "🥋",
                 "description": "Learn the traditional forms",
             },
