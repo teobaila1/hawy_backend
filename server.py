@@ -134,13 +134,31 @@ NOIEMBRIE
 
 PATTERNS (TULLS):
 
+9 GUP (CENTURA ALB CU DUNGA GALBENA):
+CHOON-JI: cer si pamant
 
+8 GUP (CENTURA GALBENA):
+DAN-GUN: intemeietorul legendar al Coreei acum 2000 de ani
+
+7 GUP (CENTURA GALBENA CU DUNGA VERDE):
 DO-SAN: este pseudonimul patriotului Ahn Chang-Ho (1876–1938). Cele 24 de mișcări reprezintă întreaga sa viață, dedicată educației Coreei și mișcării de independență.
+
+6 GUP (CENTURA VERDE):
 WON-HYO: a fost călugărul renumit care a introdus budismul în Dinastia Silla în anul 686 d.Hr.
+
+5 GUP (CENTURA VERDE CU DUNGA ALBASTRA):
 YUL-GOK: este pseudonimul marelui filosof și savant Yil (1536–1584), supranumit „Confuciusul Coreei”. Cele 38 de mișcări ale modelului se referă la locul său de naștere, aflat la latitudinea de 38°, iar diagrama (+) simbolizează „savantul”.
+
+4 GUP (CENTURA ALBASTRA):
 JOONG-GUN: este numit după patriotul Ahn Joong-Gun, care l-a asasinat pe Hiro-Bumi Ito, primul guvernator general japonez al Coreei, cunoscut ca principalul artizan al fuziunii Coreea-Japonia. Cele 32 de mișcări reprezintă vârsta lui Ahn la momentul execuției în închisoarea Lui-Shung (1910).
+
+3 GUP (CENTURA ALBASTRA CU DUNGA ROSIE):
 TOI-GYE: este numele de condei al savantului Yi Hwang (secolul al XVI-lea), autoritate în neo-confucianism. Cele 37 de mișcări se referă la locul său de naștere, la latitudinea de 37°, iar diagrama (+) simbolizează „savantul”.
+
+2 GUP (CENTURA ROSIE):
 HWA-RANG: este numit după grupul de tineri Hwa-Rang, originar din Dinastia Silla la începutul secolului al VII-lea. Cele 29 de mișcări se referă la Divizia 29 Infanterie, unde Taekwon-Do a ajuns la maturitate.
+
+1 GUP (CENTURA ROSIE CU DUNGA NEAGRA)
 CHOONG-MOO: a fost numele dat marelui amiral Yi Soon-Sin din Dinastia Yi. Se spune că a inventat prima navă de război blindată (Kobukson) în 1592, considerată precursorul submarinului modern. Modelul se încheie cu un atac cu mâna stângă, simbolizând moartea sa regretabilă, fără șansa de a-și demonstra potențialul neîngrădit, reținut de loialitatea forțată față de rege.
 
 
