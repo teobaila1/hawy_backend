@@ -142,27 +142,59 @@ JOONG-GUN: este numit după patriotul Ahn Joong-Gun, care l-a asasinat pe Hiro-B
 TOI-GYE: este numele de condei al savantului Yi Hwang (secolul al XVI-lea), autoritate în neo-confucianism. Cele 37 de mișcări se referă la locul său de naștere, la latitudinea de 37°, iar diagrama (+) simbolizează „savantul”.
 HWA-RANG: este numit după grupul de tineri Hwa-Rang, originar din Dinastia Silla la începutul secolului al VII-lea. Cele 29 de mișcări se referă la Divizia 29 Infanterie, unde Taekwon-Do a ajuns la maturitate.
 CHOONG-MOO: a fost numele dat marelui amiral Yi Soon-Sin din Dinastia Yi. Se spune că a inventat prima navă de război blindată (Kobukson) în 1592, considerată precursorul submarinului modern. Modelul se încheie cu un atac cu mâna stângă, simbolizând moartea sa regretabilă, fără șansa de a-și demonstra potențialul neîngrădit, reținut de loialitatea forțată față de rege.
+
+
+Pentru centura neagra 1 DAN:
+
 KWANG-GAE: este numit după faimosul Gwang-Gae-Toh-Wang, al 19-lea rege al Dinastiei Koguryo, care a recucerit teritoriile pierdute, inclusiv o mare parte din Manciuria. Diagrama (+) simbolizează expansiunea și recuperarea teritoriilor. Cele 39 de mișcări se referă la anul 391 d.Hr., când a urcat pe tron.
 PO-EUN: este pseudonimul unui supus loial, Chong Mong-Chu (1400), poet celebru, cunoscut pentru versul „Nu voi sluji un al doilea stăpân, chiar dacă aș fi răstignit de o sută de ori”. A fost și pionier în fizică. Diagrama (-) simbolizează loialitatea sa neabătută față de rege și țară, spre sfârșitul Dinastiei Koryo.
 GE-BAEK: este numit după Ge-Baek, un mare general din Dinastia Baek Je (660 d.Hr.). Diagrama (I) simbolizează disciplina sa militară severă și strictă.
+
+
+
+Pentru centura neagra 2 DAN:
+
 EUI-AM: este pseudonimul lui Son Byong Hi, liderul mișcării de independență coreene din 1 martie 1919. Cele 45 de mișcări se referă la vârsta sa când a schimbat numele Dong Hak (Cultura Orientală) în Chondo Kyo (Religia Căii Cerești) în 1905. Diagrama (1) simbolizează spiritul său de neînfrânt.
 CHOONG-JANG: este pseudonimul dat generalului Kim Duk Ryang, care a trăit în Dinastia Yi, secolul al XIV-lea. Modelul se încheie cu un atac cu mâna stângă, simbolizând tragedia morții sale la 27 de ani, în închisoare, înainte de a-și atinge maturitatea deplină.
 JUCHE: este o idee filosofică conform căreia omul este stăpânul a tot și decide totul, adică omul este stăpânul lumii și al destinului său. Se spune că această idee își are rădăcinile în Muntele Baekdu, care simbolizează spiritul poporului coreean. Diagrama () reprezintă Muntele Baekdu.
+
+
+
+Pentru centura neagra 3 DAN:
+
 SAM-IL: denotă data istorică a mișcării de independență a Coreei, care a început pe 1 martie 1919. Cele 33 de mișcări ale modelului reprezintă cei 33 de patrioți care au planificat mișcarea.
 YOO-SIN: este numit după generalul Kim Yoo Sin, comandant în Dinastia Silla. Cele 68 de mișcări se referă la anul 668 d.Hr., când Coreea a fost unificată. Poziția de pregătire indică sabia trasă pe partea dreaptă, nu pe stânga, simbolizând greșeala lui Yoo Sin de a urma ordinele regelui de a lupta alături de forțe străine împotriva propriei națiuni.
 CHOI-YONG: este numit după generalul Choi Yong, prim-ministru și comandant suprem al forțelor armate în secolul al XIV-lea, în Dinastia Koryo. A fost respectat pentru loialitatea, patriotismul și modestia sa. A fost executat de comandanții săi subordonați, conduși de generalul Yi Sung Gae, care a devenit primul rege al Dinastiei Yi.
+
+
+
+Pentru centura neagra 4 DAN:
+
 YON-GAE: este numit după generalul faimos din Dinastia Koguryo, Yon Gae Somoon. Cele 49 de mișcări se referă la anul 649 d.Hr., când a forțat Dinastia Tang să părăsească Coreea, după ce a distrus aproape 300.000 de soldați la Ansi Sung.
 UL-JI: este numit după generalul UI-Ji Moon Dok, care a apărat cu succes Coreea împotriva invaziei Tang din 612 d.Hr., condusă de Yang Je. Folosind tactici de gherilă, a decimat o mare parte din forțele invadatoare. Diagrama (1) reprezintă numele său de familie. Cele 42 de mișcări reprezintă vârsta autorului când a creat modelul.
 MOON-MOO: onorează al 30-lea rege al Dinastiei Silla. Trupul său a fost îngropat lângă Dae Wang Am (Stânca Marelui Rege). Conform testamentului său, trupul a fost plasat în mare „Unde sufletul meu va apăra pentru totdeauna pământul meu de japonezi”. Se spune că Sok Gul Am (Peștera de Piatră) a fost construită pentru a-i păzi mormântul. Este un exemplu remarcabil al culturii din Dinastia Silla. Cele 61 de mișcări simbolizează anul 661 d.Hr., când Moon Moo a urcat pe tron.
 SO-SAN: este pseudonimul marelui călugăr Choi Hyong Ung (1520–1604) din Dinastia Yi. Cele 72 de mișcări se referă la vârsta sa când a organizat un corp de călugări soldați, cu ajutorul elevului său Sa Myung Dang. Aceștia au respins pirații japonezi care au invadat peninsula coreeană în 1592.
+
+
+
+Pentru centura neagra 5-9 DAN:
+
+
 SE-JONG: este numit după cel mai mare rege coreean, Se-Jong, care a inventat alfabetul coreean în anul 1443 și a fost, de asemenea, un meteorolog remarcabil. Diagrama () îl reprezintă pe rege, iar cele 24 de mișcări corespund celor 24 de litere ale alfabetului coreean.
 TONG-IL: denotă hotărârea privind reunificarea Coreei, care a fost divizată din anul 1945. Diagrama (1) simbolizează rasa omogenă.
 
 
 
+SALUTURI INSTRUCTORI:
+
+1-3 DAN -> SABOOM
+4-6 DAN -> SABONIM
+7-8 DAN -> SAHEUN (MASTER)
+9 DAN -> SASEONG (GRANDMASTER)
+
+
 
 HAND PARTS (Sang Bansin):
-
 
 
 
